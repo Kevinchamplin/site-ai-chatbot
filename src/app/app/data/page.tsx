@@ -66,6 +66,63 @@ export default async function DataPage() {
         </section>
         <section className="space-y-4 rounded-xl border border-zinc-800 bg-zinc-900/60 p-4 text-sm">
           <div>
+            <h3 className="text-sm font-semibold text-zinc-100">Quick text upload</h3>
+            <p className="mt-1 text-xs text-zinc-400">
+              Attach a small .txt file to a bot. This is a minimal ingestion flow used for
+              the current retrieval demo.
+            </p>
+          </div>
+          {bots.length === 0 ? (
+            <p className="text-xs text-zinc-500">
+              Create a bot first on the Bots page before uploading data.
+            </p>
+          ) : (
+            <form
+              action="/api/data/upload"
+              method="post"
+              encType="multipart/form-data"
+              className="space-y-3 text-xs"
+            >
+              <div className="space-y-1">
+                <label htmlFor="botId" className="font-medium text-zinc-200">
+                  Bot
+                </label>
+                <select
+                  id="botId"
+                  name="botId"
+                  className="h-8 w-full rounded-md border border-zinc-700 bg-zinc-950 px-2 text-xs text-zinc-100 outline-none focus:border-zinc-500"
+                >
+                  {bots.map((bot) => (
+                    <option key={bot.id} value={bot.id}>
+                      {bot.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="space-y-1">
+                <label htmlFor="file" className="font-medium text-zinc-200">
+                  Text or PDF file (.txt, .pdf)
+                </label>
+                <input
+                  id="file"
+                  name="file"
+                  type="file"
+                  accept=".txt,.pdf,application/pdf"
+                  required
+                  className="block w-full text-xs text-zinc-300 file:mr-2 file:rounded-md file:border-0 file:bg-zinc-800 file:px-2 file:py-1 file:text-xs file:text-zinc-100 hover:file:bg-zinc-700"
+                />
+              </div>
+              <button
+                type="submit"
+                className="inline-flex h-8 items-center justify-center rounded-md bg-zinc-50 px-3 text-[11px] font-medium text-zinc-950 hover:bg-zinc-200"
+              >
+                Upload and chunk
+              </button>
+            </form>
+          )}
+        </section>
+        <section className="space-y-4 rounded-xl border border-zinc-800 bg-zinc-900/60 p-4 text-sm">
+          <div>
             <h3 className="text-sm font-semibold text-zinc-100">Planned connectors</h3>
             <p className="mt-1 text-xs text-zinc-400">
               This is a roadmap view so recruiters can see how the product will grow.
