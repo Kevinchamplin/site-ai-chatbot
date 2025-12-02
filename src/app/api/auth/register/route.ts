@@ -3,6 +3,10 @@ import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { createSessionToken, hashPassword } from "@/lib/auth";
 
+export async function GET(request: Request) {
+  return NextResponse.redirect(new URL("/register", request.url));
+}
+
 export async function POST(request: Request) {
   const formData = await request.formData();
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
