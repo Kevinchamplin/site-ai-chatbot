@@ -17,4 +17,42 @@ model User {
   passwordHash String
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+
+  bots        Bot[]
+}
+
+model Bot {
+  id          String      @id @default(cuid())
+  userId      String
+  name        String
+  slug        String
+  description String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokens      BotToken[]
+  documents   Document[]
+
+  @@unique([userId, slug])
+}
+
+model BotToken {
+  id        String   @id @default(cuid())
+  botId     String
+  token     String   @unique
+  createdAt DateTime @default(now())
+
+  bot       Bot      @relation(fields: [botId], references: [id], onDelete: Cascade)
+}
+
+model Document {
+  id          String   @id @default(cuid())
+  botId       String
+  title       String
+  sourceType  String   // e.g. "upload", "url", "crawl"
+  sourceRef   String   // file name or URL
+  createdAt   DateTime @default(now())
+
+  bot         Bot      @relation(fields: [botId], references: [id], onDelete: Cascade)
 }

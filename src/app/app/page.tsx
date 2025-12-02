@@ -1,3 +1,5 @@
+import { ChatPanel } from "./ChatPanel";
+
 export const metadata = {
   title: "Dashboard | site-ai-chatbot",
 };
@@ -40,6 +42,7 @@ export default function AppHomePage() {
           </p>
         </div>
       </div>
+      <ChatPanel />
     </div>
   );
 }
