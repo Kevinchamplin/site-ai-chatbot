@@ -1,10 +1,28 @@
 import { ChatPanel } from "./ChatPanel";
+import { prisma } from "@/lib/prisma";
+import { getUserFromSession } from "@/lib/auth";
 
 export const metadata = {
   title: "Dashboard | site-ai-chatbot",
 };
 
-export default function AppHomePage() {
+export default async function AppHomePage() {
+  const user = await getUserFromSession();
+
+  const bots = user
+    ? await prisma.bot.findMany({
+        where: { userId: user.id },
+        include: { tokens: true },
+        orderBy: { createdAt: "desc" },
+      })
+    : [];
+
+  const botSummaries = bots.map((bot) => ({
+    id: bot.id,
+    name: bot.name,
+    primaryToken: bot.tokens[0]?.token ?? null,
+  }));
+
   return (
     <div className="space-y-6">
       <div>
@@ -42,7 +60,7 @@ export default function AppHomePage() {
           </p>
         </div>
       </div>
-      <ChatPanel />
+      <ChatPanel bots={botSummaries} />
     </div>
   );
 }

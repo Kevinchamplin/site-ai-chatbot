@@ -8,11 +8,20 @@ type ChatMessage = {
   content: string;
 };
 
-export function ChatPanel() {
+type ChatPanelBot = {
+  id: string;
+  name: string;
+  primaryToken: string | null;
+};
+
+export function ChatPanel({ bots }: { bots: ChatPanelBot[] }) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selectedBotId, setSelectedBotId] = useState<string | null>(
+    bots[0]?.id ?? null,
+  );
 
   async function handleSend(event: React.FormEvent) {
     event.preventDefault();
@@ -32,12 +41,33 @@ export function ChatPanel() {
     setError(null);
 
     try {
-      const historyPayload = messages.map((m) => ({ role: m.role, content: m.content }));
+      const historyPayload = messages.map((m) => ({
+        role: m.role,
+        content: m.content,
+      }));
+
+      const activeBot =
+        selectedBotId && bots.length > 0
+          ? bots.find((b) => b.id === selectedBotId) ?? bots[0]
+          : bots[0];
+
+      const payload: {
+        message: string;
+        history: { role: string; content: string }[];
+        token?: string;
+      } = {
+        message: trimmed,
+        history: historyPayload,
+      };
+
+      if (activeBot?.primaryToken) {
+        payload.token = activeBot.primaryToken;
+      }
 
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: trimmed, history: historyPayload }),
+        body: JSON.stringify(payload),
       });
 
       if (!res.ok) {
@@ -56,7 +86,7 @@ export function ChatPanel() {
       };
 
       setMessages((prev) => [...prev, assistantMessage]);
-    } catch (err) {
+    } catch {
       setError("Network error while talking to /api/chat.");
     } finally {
       setIsSending(false);
@@ -72,8 +102,30 @@ export function ChatPanel() {
               Live chat preview
             </p>
             <p className="text-xs text-zinc-400">
-              This is wired to /api/chat and uses your OPENAI_API_KEY.
+              This is wired to /api/chat and uses your OPENAI_API_KEY. When a bot with an
+              embed token is selected, uploaded content for that bot is used as
+              retrieval context.
             </p>
+          </div>
+          <div className="flex items-center gap-1">
+            <span className="text-[10px] uppercase tracking-[0.16em] text-zinc-500">
+              Bot
+            </span>
+            {bots.length === 0 ? (
+              <span className="text-[11px] text-zinc-500">None yet</span>
+            ) : (
+              <select
+                value={selectedBotId ?? bots[0]?.id ?? ""}
+                onChange={(e) => setSelectedBotId(e.target.value)}
+                className="h-7 rounded-md border border-zinc-700 bg-zinc-950 px-2 text-[11px] text-zinc-100 outline-none focus:border-zinc-500"
+              >
+                {bots.map((bot) => (
+                  <option key={bot.id} value={bot.id}>
+                    {bot.name}
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
         </div>
         <div className="mt-2 flex-1 space-y-2 overflow-hidden rounded-lg border border-zinc-800 bg-zinc-900/50 p-3 text-sm">
